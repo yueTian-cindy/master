@@ -1,10 +1,10 @@
 name: Deploy to Pages Branch
 
 on:
-  # 每次推送到 `master` 分支时触发这个"工作流程"
-  # 如果你使用了别的分支名，请按需将 `master` 替换成你的分支名
+  # 每次推送到 `main` 分支时触发这个"工作流程"
+  # 如果你使用了别的分支名，请按需将 `main` 替换成你的分支名
   push:
-    branches: [ master ]
+    branches: [ main ]
   # 允许你在 GitHub 上的 Actions 标签中手动触发此"工作流程"
   workflow_dispatch:
 
@@ -39,9 +39,13 @@ jobs:
       - name: Create .nojekyll file
         run: touch dist/.nojekyll
       
-      - name: Deploy to pages branch
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: pages # 部署到pages分支
-          folder: dist # Astro默认构建输出目录
-          clean: true # 清理目标分支中的旧文件
+      - name: Deploy to Alibaba Cloud
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "dist/" # 你的构建输出目录
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          TARGET: "/var/www/blog" # 服务器上的网站目录
